@@ -14,7 +14,7 @@
 ## 快速开始
 
 ```bash
-curl -O https://raw.githubusercontent.com/qzz0518/nexus-run/refs/heads/main/nexus-manager.sh && chmod +x nexus-manager.sh && ./nexus-manager.sh
+curl -O https://raw.githubusercontent.com/aLIEzsss4/nexus-run/refs/heads/main/nexus-manager.sh && chmod +x nexus-manager.sh && ./nexus-manager.sh
 ```
 
 ## 系统要求
