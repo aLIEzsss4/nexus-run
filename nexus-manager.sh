@@ -262,6 +262,38 @@ EOF
     fi
 }
 
+check_cli_status() {
+    if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
+        echo -e "${GREEN}Prover 正在运行中. 正在打开原始日志窗口...${NC}"
+        echo -e "${YELLOW}提示: 按 'q' 键退出监控返回主菜单${NC}"
+        sleep 2
+        
+        # 创建临时的 tmux 配置
+        local tmux_conf=$(mktemp)
+        cat > "$tmux_conf" <<EOF
+# 设置快捷键前缀
+set-option -g prefix C-b
+
+# 设置 q 键绑定为分离会话
+bind-key q detach-client
+
+# 状态栏提示
+set -g status-right "#[fg=yellow]按 'q' 退出监控 "
+EOF
+
+        # 使用临时配置文件启动 tmux
+        TMUX='' tmux -f "$tmux_conf" attach-session -t "$SESSION_NAME"
+        
+        # 清理临时配置文件
+        rm -f "$tmux_conf"
+        
+        echo -e "\n${GREEN}已退出监控视图${NC}"
+        sleep 1
+    else
+        echo -e "${RED}Prover 未运行${NC}"
+    fi
+}
+
 show_prover_id() {
     if [ -f "$PROVER_ID_FILE" ]; then
         local id=$(cat "$PROVER_ID_FILE")
@@ -309,14 +341,15 @@ while true; do
     echo -e "\n${YELLOW}=== Nexus Prover 管理工具 ===${NC}"
 
     echo "1. 安装并启动 Nexus"
-    echo "2. 查看当前运行状态"
-    echo "3. 查看 Prover ID"
-    echo "4. 设置 Prover ID"
-    echo "5. 停止 Nexus"
-    echo "6. 查看完整日志"
-    echo "7. 退出"
+    echo "2. 查看监控面板"
+    echo "3. 查看原始日志窗口"
+    echo "4. 查看 Prover ID"
+    echo "5. 设置 Prover ID"
+    echo "6. 停止 Nexus"
+    echo "7. 查看完整日志"
+    echo "8. 退出"
 
-    read -p "请选择操作 [1-7]: " choice
+    read -p "请选择操作 [1-8]: " choice
     case $choice in
     1)
         setup_directories
@@ -328,18 +361,21 @@ while true; do
         check_status
         ;;
     3)
-        show_prover_id
+        check_cli_status
         ;;
     4)
-        set_prover_id
+        show_prover_id
         ;;
     5)
-        stop_prover
+        set_prover_id
         ;;
     6)
-        show_logs
+        stop_prover
         ;;
     7)
+        show_logs
+        ;;
+    8)
         cleanup
         ;;
     *)
