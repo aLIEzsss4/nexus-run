@@ -165,7 +165,7 @@ generate_prover_id() {
 
 start_prover() {
     if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
-        echo -e "${YELLOW}Prover 已在运行中，请选择2查看运行日志${NC}"
+        echo -e "${YELLOW}Prover 已在运行中，请选择2查看监控面板${NC}"
         return
     fi
 
@@ -184,17 +184,51 @@ start_prover() {
         fi
     fi
 
-    tmux new-session -d -s "$SESSION_NAME" "cd '$NEXUS_HOME' && ./prover beta.orchestrator.nexus.xyz"
-    echo -e "${GREEN}Prover 已启动，选择2可查看运行日志${NC}"
+    tmux new-session -d -s "$SESSION_NAME" "cd '$NEXUS_HOME' && ./prover beta.orchestrator.nexus.xyz > prover.log 2>&1"
+    echo -e "${GREEN}Prover 已启动，选择2可查看监控面板${NC}"
 }
 
 check_status() {
     if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
-        echo -e "${GREEN}Prover 正在运行中. 正在打开日志窗口...${NC}"
-        echo -e "${YELLOW}提示: 按 Ctrl+B 然后按 D 可以退出查看${NC}"
+        echo -e "${GREEN}Prover 正在运行中. 正在显示监控视图...${NC}"
+        echo -e "${YELLOW}提示: 按 q 键退出监控返回主菜单${NC}"
         sleep 2
-        # 直接附加到现有会话
-        tmux attach-session -t "$SESSION_NAME"
+        
+        # 创建一个临时脚本来处理监控
+        local monitor_script=$(mktemp)
+        cat > "$monitor_script" << 'EOF'
+#!/bin/bash
+while true; do
+    clear
+    echo -e "\033[0;32m=== Nexus Prover 监控面板 ===\033[0m"
+    echo -e "\033[1;33m按 'q' 键退出监控返回主菜单\033[0m\n"
+    
+    # 显示进程信息
+    echo -e "\033[0;32m进程状态:\033[0m"
+    ps aux | grep "[p]rover" | awk '{printf "PID: %s\nCPU: %s%%\n内存: %s%%\n运行时间: %s\n", $2, $3, $4, $10}'
+    
+    # 显示最新日志
+    echo -e "\n\033[0;32m最新日志:\033[0m"
+    tail -n 10 "$HOME/.nexus/prover.log" 2>/dev/null || echo "暂无日志"
+    
+    # 显示系统资源
+    echo -e "\n\033[0;32m系统资源:\033[0m"
+    free -h | grep "Mem:" | awk '{printf "内存使用: %s / %s\n", $3, $2}'
+    df -h / | tail -n 1 | awk '{printf "磁盘使用: %s / %s\n", $3, $2}'
+    
+    read -t 2 -N 1 input
+    if [[ $input = "q" ]] || [[ $input = "Q" ]]; then
+        break
+    fi
+done
+EOF
+        
+        chmod +x "$monitor_script"
+        $monitor_script
+        rm "$monitor_script"
+        
+        echo -e "\n${GREEN}已退出监控视图${NC}"
+        sleep 1
     else
         echo -e "${RED}Prover 未运行${NC}"
     fi
