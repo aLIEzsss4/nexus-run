@@ -54,6 +54,7 @@ check_openssl_version() {
 
 setup_directories() {
     mkdir -p "$PROGRAM_DIR"
+    mkdir -p "$(dirname "$PROVER_LOG")"
     ln -sf "$PROGRAM_DIR" "$NEXUS_HOME/src/generated"
 }
 
@@ -179,14 +180,14 @@ start_prover() {
         read -p "Prover ID > " input_id
 
         if [ -n "$input_id" ]; then
-            echo "$input_id" >"$PROVER_ID_FILE"
+            echo "$input_id" > "$PROVER_ID_FILE"
             echo -e "${GREEN}已保存 Prover ID: $input_id${NC}"
         else
             echo -e "${YELLOW}将自动生成新的 Prover ID...${NC}"
         fi
     fi
 
-    tmux new-session -d -s "$SESSION_NAME" "cd '$NEXUS_HOME' && ./prover beta.orchestrator.nexus.xyz > prover.log 2>&1"
+    tmux new-session -d -s "$SESSION_NAME" "cd '$NEXUS_HOME' && ./prover beta.orchestrator.nexus.xyz > '$PROVER_LOG' 2>&1"
     echo -e "${GREEN}Prover 已启动，选择2可查看监控面板${NC}"
 }
 
