@@ -191,9 +191,15 @@ start_prover() {
 check_status() {
     if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
         echo -e "${GREEN}Prover 正在运行中. 正在打开日志窗口...${NC}"
-        echo -e "${YELLOW}提示: 查看完成后直接关闭终端即可，不要使用 Ctrl+C${NC}"
+        echo -e "${YELLOW}提示: 按 'q' 键可以返回主菜单${NC}"
         sleep 2
-        tmux attach-session -t "$SESSION_NAME"
+        # 创建一个新窗口用于查看日志，并设置只读模式
+        tmux new-window -t "$SESSION_NAME" \; \
+            send-keys "tmux attach-session -t $SESSION_NAME" C-m \; \
+            set-window-option mode-keys vi \; \
+            copy-mode \; \
+            send-keys q
+        echo -e "\n${GREEN}已返回主菜单${NC}"
     else
         echo -e "${RED}Prover 未运行${NC}"
     fi
