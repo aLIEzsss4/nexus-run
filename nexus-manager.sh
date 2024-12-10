@@ -327,9 +327,11 @@ while true; do
     echo "5. 设置 Prover ID"
     echo "6. 停止 Nexus"
     echo "7. 查看完整日志"
-    echo "8. 退出"
+    echo "8. 连接到 Nexus CLI 会话"
+    echo "9. 退出"
+    
 
-    read -p "请选择操作 [1-8]: " choice
+    read -p "请选择操作 [1-9]: " choice
     case $choice in
     1)
         setup_directories
@@ -356,6 +358,9 @@ while true; do
         show_logs
         ;;
     8)
+        tmux attach -t nexus-cli
+        ;;
+    9)
         cleanup
         ;;
     *)
