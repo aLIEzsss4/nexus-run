@@ -17,6 +17,13 @@
 curl -O https://raw.githubusercontent.com/aLIEzsss4/nexus-run/refs/heads/main/nexus-manager.sh && chmod +x nexus-manager.sh && ./nexus-manager.sh
 ```
 
+
+next time you can run
+
+```bash
+./nexus-manager.sh
+```
+
 ## 系统要求
 
 - Linux (AMD64) 或 macOS (m系列芯片或者intel芯片)

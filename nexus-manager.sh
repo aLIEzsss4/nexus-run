@@ -264,31 +264,10 @@ EOF
 
 check_cli_status() {
     if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
-        echo -e "${GREEN}Prover 正在运行中. 正在打开原始日志窗口...${NC}"
-        echo -e "${YELLOW}提示: 按 'q' 键退出监控返回主菜单${NC}"
+        echo -e "${GREEN}Prover 正在运行中. 正在打开日志窗口...${NC}"
+        echo -e "${YELLOW}提示: 查看完成后按 Ctrl+B 再按 D 即可，不要使用 Ctrl+C${NC}"
         sleep 2
-        
-        # 创建临时的 tmux 配置
-        local tmux_conf=$(mktemp)
-        cat > "$tmux_conf" <<EOF
-# 设置快捷键前缀
-set-option -g prefix C-b
-
-# 设置 q 键绑定为分离会话
-bind-key q detach-client
-
-# 状态栏提示
-set -g status-right "#[fg=yellow]按 'q' 退出监控 "
-EOF
-
-        # 使用临时配置文件启动 tmux
-        TMUX='' tmux -f "$tmux_conf" attach-session -t "$SESSION_NAME"
-        
-        # 清理临时配置文件
-        rm -f "$tmux_conf"
-        
-        echo -e "\n${GREEN}已退出监控视图${NC}"
-        sleep 1
+        tmux attach-session -t "$SESSION_NAME"
     else
         echo -e "${RED}Prover 未运行${NC}"
     fi
